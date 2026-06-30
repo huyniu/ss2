@@ -3,14 +3,11 @@ package com.example.taskmanagement.controllers;
 import com.example.taskmanagement.models.Task;
 import com.example.taskmanagement.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -22,17 +19,14 @@ public class TaskController {
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
+    @PostMapping
+    public ResponseEntity<?> createNewTask(@RequestBody Task newTask) {
+        boolean isCreated = taskService.createTask(newTask);
 
-    @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks(
-            @RequestParam(name = "search", required = false) String search) {
-
-        List<Task> tasks = taskService.findAllTasks();
-        if (search != null && !search.trim().isEmpty()) {
-            tasks = tasks.stream()
-                    .filter(task -> task.getTitle().toLowerCase().contains(search.toLowerCase()))
-                    .collect(Collectors.toList());
+        if (isCreated) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("Tạo task thành công!");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi: Người dùng (assignedTo) không tồn tại!");
         }
-        return ResponseEntity.ok(tasks);
     }
 }
